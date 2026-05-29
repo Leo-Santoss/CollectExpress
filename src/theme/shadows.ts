@@ -1,24 +1,15 @@
 export const shadows = {
   soft: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.08)',
+    elevation: 3,
   },
   medium: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
+    elevation: 6,
   },
-  strong: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 16,
-    elevation: 8,
+  hard: {
+    boxShadow: '0px 6px 16px rgba(0, 0, 0, 0.16)',
+    elevation: 10,
   },
 } as const;
 

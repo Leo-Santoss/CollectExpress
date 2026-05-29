@@ -1,6 +1,7 @@
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 
 import Button from '../../components/ui/Button';
 import TextInputField from '../../components/ui/TextInputField';
@@ -15,7 +16,7 @@ function isValidEmail(email: string): boolean {
 }
 
 function isValidSenha(senha: string): boolean {
-  return senha.length >= 8;
+  return senha.length >= 6;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -43,7 +44,7 @@ export default function LoginScreen() {
     if (!senha) {
       newErrors.senha = 'Senha é obrigatória';
     } else if (!isValidSenha(senha)) {
-      newErrors.senha = 'Senha deve ter no mínimo 8 caracteres';
+      newErrors.senha = 'Senha deve ter no mínimo 6 caracteres';
     }
 
     setErrors(newErrors);
@@ -82,16 +83,12 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={[styles.header, { marginBottom: spacing.xxl }]}>
-          <Text
-            style={{
-              fontSize: typography.fontSizeXl ?? 28,
-              fontFamily: typography.fontFamilyBold,
-              color: colors.primaryGreen,
-              textAlign: 'center',
-            }}
-          >
-            CollectExpress
-          </Text>
+          <Image 
+            source={require('../../../assets/images/logo.png')} 
+            style={{ width: 140, height: 180 }} 
+            contentFit="contain" 
+            accessibilityLabel="CollectExpress Logo"
+          />
           <Text
             style={{
               fontSize: typography.fontSizeMd ?? 16,

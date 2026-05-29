@@ -46,6 +46,10 @@ export default function CarrinhoScreen() {
   const [checkingOut, setCheckingOut] = useState(false);
   const [showAddressPicker, setShowAddressPicker] = useState(false);
 
+  // New Address inline form state
+  const [newAddress, setNewAddress] = useState({ cep: '', logradouro: '', numero: '', bairro: '', cidade_estado: '' });
+  const [savingAddress, setSavingAddress] = useState(false);
+
   // ── Load addresses ──────────────────────────────────────────────────────────
 
   const loadEnderecos = useCallback(async () => {
@@ -62,6 +66,14 @@ export default function CarrinhoScreen() {
       setLoadingEnderecos(false);
     }
   }, [selectedEnderecoId]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      refreshCart();
+      loadEnderecos(); // also refresh addresses
+    });
+    return unsubscribe;
+  }, [navigation, refreshCart, loadEnderecos]);
 
   useEffect(() => {
     if (cart && cart.itens && cart.itens.length > 0) {
@@ -505,21 +517,59 @@ export default function CarrinhoScreen() {
             {loadingEnderecos ? (
               <LoadingSpinner message="Carregando endereços..." />
             ) : enderecos.length === 0 ? (
-              <View>
-                <Text
-                  style={{
-                    fontSize: typography.fontSizeSm,
-                    color: colors.textSecondary,
-                    marginBottom: spacing.sm,
-                  }}
-                >
-                  Nenhum endereço cadastrado.
+              <View style={{ backgroundColor: colors.surfaceVariant, padding: spacing.md, borderRadius: radius.md }}>
+                <Text style={{ fontSize: typography.fontSizeSm, fontFamily: typography.fontFamilyBold, marginBottom: spacing.sm }}>
+                  Cadastrar Endereço
                 </Text>
+                <TextInput
+                  placeholder="CEP"
+                  value={newAddress.cep}
+                  onChangeText={(t) => setNewAddress({ ...newAddress, cep: t })}
+                  style={[styles.input, { backgroundColor: colors.background, borderRadius: radius.sm, padding: spacing.sm, marginBottom: spacing.xs, borderColor: colors.border }]}
+                />
+                <TextInput
+                  placeholder="Rua / Logradouro"
+                  value={newAddress.logradouro}
+                  onChangeText={(t) => setNewAddress({ ...newAddress, logradouro: t })}
+                  style={[styles.input, { backgroundColor: colors.background, borderRadius: radius.sm, padding: spacing.sm, marginBottom: spacing.xs, borderColor: colors.border }]}
+                />
+                <View style={{ flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.xs }}>
+                  <TextInput
+                    placeholder="Número"
+                    value={newAddress.numero}
+                    onChangeText={(t) => setNewAddress({ ...newAddress, numero: t })}
+                    style={[styles.input, { flex: 1, backgroundColor: colors.background, borderRadius: radius.sm, padding: spacing.sm, borderColor: colors.border }]}
+                  />
+                  <TextInput
+                    placeholder="Bairro"
+                    value={newAddress.bairro}
+                    onChangeText={(t) => setNewAddress({ ...newAddress, bairro: t })}
+                    style={[styles.input, { flex: 2, backgroundColor: colors.background, borderRadius: radius.sm, padding: spacing.sm, borderColor: colors.border }]}
+                  />
+                </View>
+                <TextInput
+                  placeholder="Cidade/Estado (Ex: São Paulo/SP)"
+                  value={newAddress.cidade_estado}
+                  onChangeText={(t) => setNewAddress({ ...newAddress, cidade_estado: t })}
+                  style={[styles.input, { backgroundColor: colors.background, borderRadius: radius.sm, padding: spacing.sm, marginBottom: spacing.md, borderColor: colors.border }]}
+                />
                 <Button
-                  label="Cadastrar endereço"
-                  onPress={() => router.push('/(consumer)/perfil/enderecos')}
-                  variant="outline"
-                  fullWidth={false}
+                  label="Salvar Endereço"
+                  loading={savingAddress}
+                  disabled={!newAddress.cep || !newAddress.logradouro || !newAddress.numero || !newAddress.bairro || !newAddress.cidade_estado}
+                  onPress={async () => {
+                    setSavingAddress(true);
+                    try {
+                      const created = await enderecosService.criar(newAddress);
+                      setEnderecos([created]);
+                      setSelectedEnderecoId(created.id);
+                    } catch {
+                      Alert.alert("Erro", "Não foi possível salvar o endereço");
+                    } finally {
+                      setSavingAddress(false);
+                    }
+                  }}
+                  variant="primary"
                 />
               </View>
             ) : (

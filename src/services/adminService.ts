@@ -12,6 +12,7 @@ export interface AdminDashboardData {
   total_usuarios: number;
   total_pedidos: number;
   receita_total: number;
+  lucro_plataforma: number;
   cacambeiros_ativos: number;
   pedidos_por_status: Record<string, number>;
   pedidos_ao_longo_do_tempo: OrderOverTimeEntry[];

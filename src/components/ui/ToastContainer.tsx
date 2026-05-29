@@ -103,9 +103,9 @@ export default function ToastContainer() {
         {
           top: insets.top + spacing.sm,
           paddingHorizontal: spacing.lg,
+          pointerEvents: 'box-none',
         },
       ]}
-      pointerEvents="box-none"
     >
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onDismiss={removeToast} />
@@ -126,9 +126,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.15)',
   },
 });

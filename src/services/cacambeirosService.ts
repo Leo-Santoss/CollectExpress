@@ -6,6 +6,7 @@ export interface DashboardMetrics {
   total_pedidos: number;
   pedidos_ativos: number;
   receita_total: number;
+  total_revenue_bruto?: number;
   nota_media: number | null;
 }
 
@@ -17,12 +18,17 @@ export interface FinanceiroFilters {
 export interface FinanceiroData {
   resumo_mensal: {
     total: number;
+    taxa_plataforma: number;
+    total_liquido: number;
     quantidade: number;
   };
   pedidos: Array<{
     id: string;
     data_pedido: string;
     preco_final: number;
+    valor_bruto: number;
+    taxa_plataforma: number;
+    valor_liquido: number;
     status_aluguel: string;
     status_pagamento: string;
   }>;

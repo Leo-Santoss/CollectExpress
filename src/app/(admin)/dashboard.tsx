@@ -337,10 +337,10 @@ export default function AdminDashboardScreen() {
           {/* Receita Total */}
           <Card
             style={styles.metricCard}
-            accessibilityLabel={`Receita Total: ${data ? formatCurrency(data.receita_total) : 'R$ 0,00'}`}
+            accessibilityLabel={`Volume Total Movimentado: ${data ? formatCurrency(data.receita_total) : 'R$ 0,00'}`}
           >
             <View style={styles.metricIconRow}>
-              <Ionicons name="wallet-outline" size={20} color={colors.success} />
+              <Ionicons name="cash-outline" size={20} color={colors.textSecondary} />
             </View>
             <Text
               style={{
@@ -349,7 +349,7 @@ export default function AdminDashboardScreen() {
                 marginTop: spacing.sm,
               }}
             >
-              Receita Total
+              Volume Total Movimentado
             </Text>
             <Text
               style={{
@@ -362,6 +362,37 @@ export default function AdminDashboardScreen() {
               adjustsFontSizeToFit
             >
               {data ? formatCurrency(data.receita_total) : 'R$ 0,00'}
+            </Text>
+          </Card>
+
+          {/* Lucro Plataforma */}
+          <Card
+            style={styles.metricCard}
+            accessibilityLabel={`Lucro da Plataforma: ${data ? formatCurrency(data.lucro_plataforma) : 'R$ 0,00'}`}
+          >
+            <View style={styles.metricIconRow}>
+              <Ionicons name="wallet-outline" size={20} color={colors.success} />
+            </View>
+            <Text
+              style={{
+                fontSize: typography.fontSize.xs,
+                color: colors.textSecondary,
+                marginTop: spacing.sm,
+              }}
+            >
+              Lucro da Plataforma (5%)
+            </Text>
+            <Text
+              style={{
+                fontSize: typography.fontSize.lg,
+                fontFamily: typography.fontFamilyBold,
+                color: colors.success,
+                marginTop: spacing.xs,
+              }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {data ? formatCurrency(data.lucro_plataforma) : 'R$ 0,00'}
             </Text>
           </Card>
 

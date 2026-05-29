@@ -28,6 +28,57 @@ interface PedidoDetalhe extends Pedido {
   avaliacao?: Avaliacao | null;
 }
 
+const STATUS_STEPS = [
+  { id: 'AGUARDANDO_PAGAMENTO', label: 'Pagamento' },
+  { id: 'AGUARDANDO_ENTREGA', label: 'Entrega' },
+  { id: 'EM_USO', label: 'Em Uso' },
+  { id: 'AGUARDANDO_RETIRADA', label: 'Recolhendo' },
+  { id: 'FINALIZADO', label: 'Finalizado' },
+];
+
+function OrderStepper({ currentStatus, colors, spacing, typography }: any) {
+  let currentIndex = STATUS_STEPS.findIndex(s => s.id === currentStatus);
+  if (currentIndex === -1) currentIndex = 0; // Fallback
+  
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: spacing.md, paddingHorizontal: spacing.sm }}>
+      {STATUS_STEPS.map((step, index) => {
+        const isCompleted = index <= currentIndex;
+        const isCurrent = index === currentIndex;
+        
+        return (
+          <View key={step.id} style={{ alignItems: 'center', flex: 1, position: 'relative' }}>
+             {/* Progress Line connecting to the right */}
+             {index < STATUS_STEPS.length - 1 && (
+               <View style={{
+                 position: 'absolute', top: 11, left: '50%', right: '-50%',
+                 height: 2, backgroundColor: index < currentIndex ? colors.primaryGreen : colors.gray, zIndex: 1
+               }} />
+             )}
+             {/* Step Circle */}
+             <View style={{ 
+               width: 24, height: 24, borderRadius: 12, 
+               backgroundColor: isCompleted ? colors.primaryGreen : colors.gray,
+               justifyContent: 'center', alignItems: 'center', zIndex: 2 
+             }}>
+               {isCompleted && <Ionicons name="checkmark" size={14} color={colors.white} />}
+             </View>
+             {/* Step Label */}
+             <Text style={{ 
+                 fontSize: 10, marginTop: 4, 
+                 color: isCurrent ? colors.primaryGreen : colors.textSecondary, 
+                 fontFamily: isCurrent ? typography.fontFamilyBold : undefined, 
+                 textAlign: 'center' 
+             }}>
+               {step.label}
+             </Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, spacing, typography, radius } = useTheme();
@@ -222,6 +273,9 @@ export default function OrderDetailScreen() {
             style={{ marginLeft: spacing.sm }}
           />
         </View>
+
+        {/* Stepper Visual */}
+        <OrderStepper currentStatus={pedido.status_aluguel} colors={colors} spacing={spacing} typography={typography} />
 
         {/* Order Details */}
         <View style={[styles.detailRow, { marginBottom: spacing.sm }]}>

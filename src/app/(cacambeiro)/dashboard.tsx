@@ -287,7 +287,7 @@ export default function DashboardScreen() {
                 marginTop: spacing.sm,
               }}
             >
-              Receita Total
+              Receita Líquida (95%)
             </Text>
             <Text
               style={{

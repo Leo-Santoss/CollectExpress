@@ -208,7 +208,7 @@ export default function FinanceiroScreen() {
       {/* Summary Card */}
       <Card
         style={{ marginBottom: spacing.lg }}
-        accessibilityLabel={`Receita do mês: ${formatCurrency(data?.resumo_mensal.total ?? 0)}. ${data?.resumo_mensal.quantidade ?? 0} pedidos finalizados`}
+        accessibilityLabel={`Receita líquida do mês: ${formatCurrency(data?.resumo_mensal.total_liquido ?? 0)}. ${data?.resumo_mensal.quantidade ?? 0} pedidos finalizados`}
       >
         <View style={styles.summaryRow}>
           <View style={[styles.summaryIcon, { backgroundColor: colors.successLight }]}>
@@ -222,7 +222,7 @@ export default function FinanceiroScreen() {
                 marginBottom: spacing.xs,
               }}
             >
-              Receita do Mês
+              Receita Líquida do Mês
             </Text>
             <Text
               style={{
@@ -233,13 +233,23 @@ export default function FinanceiroScreen() {
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              {formatCurrency(data?.resumo_mensal.total ?? 0)}
+              {formatCurrency(data?.resumo_mensal.total_liquido ?? 0)}
             </Text>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs }}>
+              <Text style={{ fontSize: typography.fontSize.xs, color: colors.textSecondary }}>
+                Bruto: {formatCurrency(data?.resumo_mensal.total ?? 0)}
+              </Text>
+              <Text style={{ fontSize: typography.fontSize.xs, color: colors.error }}>
+                Taxa (5%): -{formatCurrency(data?.resumo_mensal.taxa_plataforma ?? 0)}
+              </Text>
+            </View>
+
             <Text
               style={{
                 fontSize: typography.fontSize.sm,
                 color: colors.textSecondary,
-                marginTop: spacing.xs,
+                marginTop: spacing.sm,
               }}
             >
               {data?.resumo_mensal.quantidade ?? 0} pedidos finalizados
@@ -265,7 +275,7 @@ export default function FinanceiroScreen() {
   const renderOrderItem = ({ item }: { item: FinanceiroData['pedidos'][number] }) => (
     <Card
       style={{ marginBottom: spacing.md }}
-      accessibilityLabel={`Pedido de ${formatCurrency(item.preco_final)} em ${formatDate(item.data_pedido)}`}
+      accessibilityLabel={`Pedido com valor líquido de ${formatCurrency(item.valor_liquido)} em ${formatDate(item.data_pedido)}`}
     >
       <View style={styles.orderRow}>
         <View style={[styles.orderIcon, { backgroundColor: colors.primaryLight + '30' }]}>
@@ -279,8 +289,16 @@ export default function FinanceiroScreen() {
               color: colors.textPrimary,
             }}
           >
-            {formatCurrency(item.preco_final)}
+            {formatCurrency(item.valor_liquido)}
           </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs }}>
+            <Text style={{ fontSize: typography.fontSize.xs, color: colors.textSecondary, marginRight: spacing.sm }}>
+              Bruto: {formatCurrency(item.valor_bruto)}
+            </Text>
+            <Text style={{ fontSize: typography.fontSize.xs, color: colors.error }}>
+              Taxa: -{formatCurrency(item.taxa_plataforma)}
+            </Text>
+          </View>
           <Text
             style={{
               fontSize: typography.fontSize.xs,
