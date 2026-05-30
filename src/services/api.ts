@@ -1,4 +1,6 @@
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 // ─── Configuration ───────────────────────────────────────────────────────────
@@ -8,7 +10,7 @@ const BASE_URL =
 
 const TIMEOUT_MS = 15000;
 
-const TOKEN_STORAGE_KEY = '@collectexpress:token';
+const TOKEN_STORAGE_KEY = 'collectexpress_token';
 
 // ─── Toast Event System ──────────────────────────────────────────────────────
 
@@ -55,15 +57,26 @@ function emitAuthExpired(): void {
 // ─── Token Helpers ───────────────────────────────────────────────────────────
 
 export async function getStoredToken(): Promise<string | null> {
-  return AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+  if (Platform.OS === 'web') {
+    return AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+  }
+  return SecureStore.getItemAsync(TOKEN_STORAGE_KEY);
 }
 
 export async function setStoredToken(token: string): Promise<void> {
-  await AsyncStorage.setItem(TOKEN_STORAGE_KEY, token);
+  if (Platform.OS === 'web') {
+    await AsyncStorage.setItem(TOKEN_STORAGE_KEY, token);
+  } else {
+    await SecureStore.setItemAsync(TOKEN_STORAGE_KEY, token);
+  }
 }
 
 export async function clearStoredToken(): Promise<void> {
-  await AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
+  if (Platform.OS === 'web') {
+    await AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
+  } else {
+    await SecureStore.deleteItemAsync(TOKEN_STORAGE_KEY);
+  }
 }
 
 // ─── Axios Instance ──────────────────────────────────────────────────────────

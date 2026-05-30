@@ -3,9 +3,9 @@ import api from './api';
 // ─── Response Types ──────────────────────────────────────────────────────────
 
 export interface DashboardMetrics {
-  total_pedidos: number;
-  pedidos_ativos: number;
-  receita_total: number;
+  total_orders: number;
+  active_orders: number;
+  total_revenue: number;
   total_revenue_bruto?: number;
   nota_media: number | null;
 }

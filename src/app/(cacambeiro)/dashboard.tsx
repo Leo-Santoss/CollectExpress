@@ -217,7 +217,7 @@ export default function DashboardScreen() {
           {/* Total de Pedidos */}
           <Card
             style={styles.metricCard}
-            accessibilityLabel={`Total de Pedidos: ${metrics?.total_pedidos ?? 0}`}
+            accessibilityLabel={`Total de Pedidos: ${metrics?.total_orders ?? 0}`}
           >
             <View style={styles.metricIconRow}>
               <Ionicons name="receipt-outline" size={20} color={colors.info} />
@@ -239,14 +239,14 @@ export default function DashboardScreen() {
                 marginTop: spacing.xs,
               }}
             >
-              {metrics?.total_pedidos ?? 0}
+              {metrics?.total_orders ?? 0}
             </Text>
           </Card>
 
           {/* Pedidos Ativos */}
           <Card
             style={styles.metricCard}
-            accessibilityLabel={`Pedidos Ativos: ${metrics?.pedidos_ativos ?? 0}`}
+            accessibilityLabel={`Pedidos Ativos: ${metrics?.active_orders ?? 0}`}
           >
             <View style={styles.metricIconRow}>
               <Ionicons name="time-outline" size={20} color={colors.warning} />
@@ -268,14 +268,14 @@ export default function DashboardScreen() {
                 marginTop: spacing.xs,
               }}
             >
-              {metrics?.pedidos_ativos ?? 0}
+              {metrics?.active_orders ?? 0}
             </Text>
           </Card>
 
           {/* Receita Total */}
           <Card
             style={styles.metricCard}
-            accessibilityLabel={`Receita Total: ${metrics ? formatCurrency(metrics.receita_total) : 'R$ 0,00'}`}
+            accessibilityLabel={`Receita Total: ${metrics ? formatCurrency(metrics.total_revenue) : 'R$ 0,00'}`}
           >
             <View style={styles.metricIconRow}>
               <Ionicons name="wallet-outline" size={20} color={colors.success} />
@@ -299,7 +299,7 @@ export default function DashboardScreen() {
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              {metrics ? formatCurrency(metrics.receita_total) : 'R$ 0,00'}
+              {metrics ? formatCurrency(metrics.total_revenue) : 'R$ 0,00'}
             </Text>
           </Card>
 

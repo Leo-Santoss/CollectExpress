@@ -68,7 +68,7 @@ export default function LandingPage() {
           </Text>
           
           <Button 
-            title="Entrar ou Cadastrar" 
+            label="Entrar ou Cadastrar" 
             onPress={() => router.push('/(auth)/login')} 
             style={{ marginTop: spacing.xl, width: '100%' }}
           />

@@ -10,6 +10,7 @@ import { Alert } from 'react-native';
 
 import * as carrinhoService from '../services/carrinhoService';
 import { Carrinho } from '../types';
+import { useAuth } from './AuthContext';
 
 // ─── Context Interface ───────────────────────────────────────────────────────
 
@@ -20,6 +21,7 @@ export interface CartContextValue {
   isLoading: boolean;
   addItem(cacamba_id: string, quantidade: number, diasAluguel: number): Promise<void>;
   updateItem(itemId: string, quantidade: number): Promise<void>;
+  removeItem(itemId: string): Promise<void>;
   clearCart(): Promise<void>;
   refreshCart(): Promise<void>;
 }
@@ -32,9 +34,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<Carrinho | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const { user } = useAuth();
+
   // ── Refresh cart from API ───────────────────────────────────────────────────
 
   const refreshCart = useCallback(async () => {
+    if (!user || user.tipo_perfil !== 'CONSUMIDOR') return;
+    
     setIsLoading(true);
     try {
       const data = await carrinhoService.obter();
@@ -50,8 +56,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // ── Load cart on mount ──────────────────────────────────────────────────────
 
   useEffect(() => {
-    refreshCart();
-  }, [refreshCart]);
+    if (user && user.tipo_perfil === 'CONSUMIDOR') {
+      refreshCart();
+    } else {
+      setCart(null);
+    }
+  }, [refreshCart, user]);
 
   // ── Add item to cart ────────────────────────────────────────────────────────
 
@@ -134,6 +144,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [refreshCart]);
 
+  // ── Remove item ─────────────────────────────────────────────────────────────
+
+  const removeItem = useCallback(async (itemId: string) => {
+    setIsLoading(true);
+    try {
+      await carrinhoService.removerItem(itemId);
+      await refreshCart();
+    } catch {
+      await refreshCart();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [refreshCart]);
+
   // ── Clear cart ──────────────────────────────────────────────────────────────
 
   const clearCart = useCallback(async () => {
@@ -174,10 +198,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       addItem,
       updateItem,
+      removeItem,
       clearCart,
       refreshCart,
     }),
-    [cart, itemCount, total, isLoading, addItem, updateItem, clearCart, refreshCart]
+    [cart, itemCount, total, isLoading, addItem, updateItem, removeItem, clearCart, refreshCart]
   );
 
   return (

@@ -26,7 +26,7 @@ import { Endereco, ItemCarrinho } from '../../types';
 export default function CarrinhoScreen() {
   const router = useRouter();
   const { colors, spacing, typography, radius } = useTheme();
-  const { cart, itemCount, total, isLoading, updateItem, clearCart, refreshCart } = useCart();
+  const { cart, itemCount, total, isLoading, updateItem, removeItem, clearCart, refreshCart } = useCart();
 
   // Refresh cart when screen gains focus
   const navigation = useNavigation();
@@ -149,20 +149,49 @@ export default function CarrinhoScreen() {
   // ── Clear cart handler ──────────────────────────────────────────────────────
 
   const handleClearCart = () => {
-    Alert.alert(
-      'Limpar carrinho',
-      'Tem certeza que deseja remover todos os itens do carrinho?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Limpar',
-          style: 'destructive',
-          onPress: async () => {
-            await clearCart();
+    if (Platform.OS === 'web') {
+      if (window.confirm('Tem certeza que deseja remover todos os itens do carrinho?')) {
+        clearCart();
+      }
+    } else {
+      Alert.alert(
+        'Limpar carrinho',
+        'Tem certeza que deseja remover todos os itens do carrinho?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Limpar',
+            style: 'destructive',
+            onPress: async () => {
+              await clearCart();
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('Tem certeza que deseja remover este item?')) {
+        removeItem(itemId);
+      }
+    } else {
+      Alert.alert(
+        'Remover item',
+        'Tem certeza que deseja remover este item?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Remover',
+            style: 'destructive',
+            onPress: async () => {
+              await removeItem(itemId);
+            },
+          },
+        ]
+      );
+    }
   };
 
   // ── Checkout handler ────────────────────────────────────────────────────────
@@ -314,6 +343,15 @@ export default function CarrinhoScreen() {
                   R$ {Number(item.cacamba?.preco_diaria ?? 0).toFixed(2)} / dia
                 </Text>
               </View>
+
+              <TouchableOpacity
+                onPress={() => handleRemoveItem(item.id)}
+                accessibilityLabel="Remover item"
+                accessibilityRole="button"
+                style={{ padding: spacing.xs, marginRight: spacing.sm }}
+              >
+                <Ionicons name="trash-outline" size={20} color={colors.error} />
+              </TouchableOpacity>
 
               {/* Quantity controls */}
               <View style={styles.quantityContainer}>

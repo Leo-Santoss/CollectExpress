@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await clearStoredToken();
     setUser(null);
     setToken(null);
-    router.replace('/(auth)/login');
+    router.replace('/');
   }, []);
 
   // ── Check stored token on mount ─────────────────────────────────────────────

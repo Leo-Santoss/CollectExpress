@@ -33,3 +33,7 @@ export async function atualizarItem(id: string, quantidade: number): Promise<Car
 export async function limpar(): Promise<void> {
   await api.delete('/carrinho');
 }
+
+export async function removerItem(id: string): Promise<void> {
+  await api.delete(`/carrinho/itens/${id}`);
+}
