@@ -268,7 +268,7 @@ export default function PerfilScreen() {
 
           <TextInputField
             label="Taxa de entrega (R$)"
-            value={detalhes.taxa_entrega.toFixed(2)}
+            value={Number(detalhes.taxa_entrega ?? 0).toFixed(2)}
             onChangeText={() => {}}
             editable={false}
             accessibilityLabel="Taxa de entrega"
