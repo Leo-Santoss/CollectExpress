@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -105,17 +106,25 @@ export default function PerfilScreen() {
   // ── Logout ────────────────────────────────────────────────────────────────
 
   const handleLogout = () => {
-    Alert.alert('Sair', 'Deseja realmente sair da sua conta?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sair',
-        style: 'destructive',
-        onPress: () => {
-          logout();
-          router.replace('/(auth)/login');
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Deseja realmente sair da sua conta?');
+      if (confirmed) {
+        logout();
+        router.replace('/(auth)/login');
+      }
+    } else {
+      Alert.alert('Sair', 'Deseja realmente sair da sua conta?', [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: () => {
+            logout();
+            router.replace('/(auth)/login');
+          },
         },
-      },
-    ]);
+      ]);
+    }
   };
 
   // ── Loading state ─────────────────────────────────────────────────────────

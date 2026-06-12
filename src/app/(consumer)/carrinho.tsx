@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -26,22 +26,12 @@ import { Endereco, ItemCarrinho } from '../../types';
 export default function CarrinhoScreen() {
   const router = useRouter();
   const { colors, spacing, typography, radius } = useTheme();
-  const { cart, itemCount, total, isLoading, updateItem, removeItem, clearCart, refreshCart } = useCart();
-
-  // Refresh cart when screen gains focus
-  const navigation = useNavigation();
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      refreshCart();
-    });
-    return unsubscribe;
-  }, [navigation, refreshCart]);
+  const { cart, itemCount, total, isLoading, updateItem, updateItemDias, removeItem, clearCart, refreshCart } = useCart();
 
   // Checkout state
   const [enderecos, setEnderecos] = useState<Endereco[]>([]);
   const [selectedEnderecoId, setSelectedEnderecoId] = useState<string>('');
   const [dataInicio, setDataInicio] = useState<string>('');
-  const [diasAluguel, setDiasAluguel] = useState<string>('1');
   const [loadingEnderecos, setLoadingEnderecos] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [showAddressPicker, setShowAddressPicker] = useState(false);
@@ -67,17 +57,16 @@ export default function CarrinhoScreen() {
     }
   }, [selectedEnderecoId]);
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
+  // Refresh cart and addresses when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
       refreshCart();
-      loadEnderecos(); // also refresh addresses
-    });
-    return unsubscribe;
-  }, [navigation, refreshCart, loadEnderecos]);
+      loadEnderecos();
+    }, [refreshCart, loadEnderecos])
+  );
 
   useEffect(() => {
     if (cart && cart.itens && cart.itens.length > 0) {
-      loadEnderecos();
       // Set default date to tomorrow
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -124,26 +113,29 @@ export default function CarrinhoScreen() {
     return date >= min && date <= max;
   }
 
-  function isDiasAluguelValid(dias: string): boolean {
-    const num = parseInt(dias, 10);
-    return !isNaN(num) && num >= 1 && num <= 30;
+  function isDiasAluguelValid(dias: number): boolean {
+    return !isNaN(dias) && dias >= 1 && dias <= 30;
   }
 
   // ── Calculate price breakdown ───────────────────────────────────────────────
 
-  const diasAluguelNum = isDiasAluguelValid(diasAluguel) ? parseInt(diasAluguel, 10) : 1;
   const subtotal = cart?.itens?.reduce((sum, item) => {
     const preco = Number(item.cacamba?.preco_diaria ?? 0);
-    return sum + item.quantidade * diasAluguelNum * preco;
+    return sum + item.quantidade * item.dias_aluguel * preco;
   }, 0) || 0;
-  // Note: taxa_entrega comes from the cacambeiro details, not available in cart items directly
-  // The backend calculates the final price during checkout
 
   // ── Quantity handlers ───────────────────────────────────────────────────────
 
   const handleQuantityChange = async (item: ItemCarrinho, newQty: number) => {
     if (newQty < 1 || newQty > 10) return;
     await updateItem(item.id, newQty);
+  };
+
+  // ── Dias aluguel handler ────────────────────────────────────────────────────
+
+  const handleDiasChange = async (item: ItemCarrinho, newDias: number) => {
+    if (newDias < 1 || newDias > 30) return;
+    await updateItemDias(item.id, newDias);
   };
 
   // ── Clear cart handler ──────────────────────────────────────────────────────
@@ -206,8 +198,11 @@ export default function CarrinhoScreen() {
       Alert.alert('Erro', 'Selecione uma data de início válida (entre 1 e 60 dias a partir de hoje).');
       return;
     }
-    if (!isDiasAluguelValid(diasAluguel)) {
-      Alert.alert('Erro', 'Informe um período de aluguel válido (1 a 30 dias).');
+
+    // Validar que todos os itens têm dias_aluguel válido
+    const invalidItem = cart?.itens?.find(item => !isDiasAluguelValid(item.dias_aluguel));
+    if (invalidItem) {
+      Alert.alert('Erro', 'Todos os itens devem ter dias de aluguel entre 1 e 30.');
       return;
     }
 
@@ -216,7 +211,6 @@ export default function CarrinhoScreen() {
       await alugueisService.checkout({
         endereco_id: selectedEnderecoId,
         data_inicio: dataInicio,
-        dias_aluguel: parseInt(diasAluguel, 10),
       });
 
       // Clear cart locally
@@ -236,6 +230,7 @@ export default function CarrinhoScreen() {
       const message =
         error?.response?.data?.mensagem ||
         error?.response?.data?.message ||
+        error?.response?.data?.error ||
         'Não foi possível finalizar o pedido. Tente novamente.';
       Alert.alert('Erro no checkout', message);
     } finally {
@@ -405,10 +400,66 @@ export default function CarrinhoScreen() {
               </View>
             </View>
 
+            {/* Dias de aluguel por item */}
+            <View style={[styles.diasRow, { marginTop: spacing.sm, paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border }]}>
+              <Text style={{ fontSize: typography.fontSizeSm, color: colors.textSecondary }}>
+                Dias de aluguel:
+              </Text>
+              <View style={styles.quantityContainer}>
+                <TouchableOpacity
+                  onPress={() => handleDiasChange(item, item.dias_aluguel - 1)}
+                  disabled={item.dias_aluguel <= 1}
+                  accessibilityLabel="Diminuir dias"
+                  accessibilityRole="button"
+                  style={[
+                    styles.quantityButton,
+                    {
+                      backgroundColor: colors.gray,
+                      borderRadius: radius.sm,
+                      opacity: item.dias_aluguel <= 1 ? 0.4 : 1,
+                    },
+                  ]}
+                >
+                  <Ionicons name="remove" size={16} color={colors.textPrimary} />
+                </TouchableOpacity>
+
+                <Text
+                  style={{
+                    fontSize: typography.fontSizeMd,
+                    fontFamily: typography.fontFamilyBold,
+                    color: colors.textPrimary,
+                    marginHorizontal: spacing.sm,
+                    minWidth: 24,
+                    textAlign: 'center',
+                  }}
+                  accessibilityLabel={`Dias de aluguel: ${item.dias_aluguel}`}
+                >
+                  {item.dias_aluguel}
+                </Text>
+
+                <TouchableOpacity
+                  onPress={() => handleDiasChange(item, item.dias_aluguel + 1)}
+                  disabled={item.dias_aluguel >= 30}
+                  accessibilityLabel="Aumentar dias"
+                  accessibilityRole="button"
+                  style={[
+                    styles.quantityButton,
+                    {
+                      backgroundColor: colors.primaryGreen,
+                      borderRadius: radius.sm,
+                      opacity: item.dias_aluguel >= 30 ? 0.4 : 1,
+                    },
+                  ]}
+                >
+                  <Ionicons name="add" size={16} color={colors.textInverse} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
             {/* Item subtotal */}
             <View style={[styles.itemSubtotal, { marginTop: spacing.sm, paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border }]}>
               <Text style={{ fontSize: typography.fontSizeSm, color: colors.textSecondary }}>
-                {item.quantidade} × {diasAluguelNum} dias × R$ {Number(item.cacamba?.preco_diaria ?? 0).toFixed(2)}
+                {item.quantidade} × {item.dias_aluguel} dias × R$ {Number(item.cacamba?.preco_diaria ?? 0).toFixed(2)}
               </Text>
               <Text
                 style={{
@@ -417,7 +468,7 @@ export default function CarrinhoScreen() {
                   color: colors.primaryGreen,
                 }}
               >
-                R$ {(item.quantidade * diasAluguelNum * Number(item.cacamba?.preco_diaria ?? 0)).toFixed(2)}
+                R$ {(item.quantidade * item.dias_aluguel * Number(item.cacamba?.preco_diaria ?? 0)).toFixed(2)}
               </Text>
             </View>
           </Card>
@@ -500,43 +551,6 @@ export default function CarrinhoScreen() {
             >
               Mínimo: {formatDateDisplay(getMinDate())} | Máximo: {formatDateDisplay(getMaxDate())}
             </Text>
-          </Card>
-
-          {/* Dias aluguel */}
-          <Card style={{ marginBottom: spacing.md }}>
-            <Text
-              style={{
-                fontSize: typography.fontSizeSm,
-                fontFamily: typography.fontFamilyMedium,
-                color: colors.textSecondary,
-                marginBottom: spacing.xs,
-              }}
-            >
-              Dias de aluguel (1-30)
-            </Text>
-            <TextInput
-              value={diasAluguel}
-              onChangeText={(text) => {
-                const cleaned = text.replace(/[^0-9]/g, '');
-                setDiasAluguel(cleaned);
-              }}
-              placeholder="1"
-              placeholderTextColor={colors.textSecondary}
-              keyboardType="numeric"
-              maxLength={2}
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.background,
-                  color: colors.textPrimary,
-                  borderColor: isDiasAluguelValid(diasAluguel) || !diasAluguel ? colors.border : colors.error,
-                  borderRadius: radius.md,
-                  padding: spacing.sm,
-                  fontSize: typography.fontSizeMd,
-                },
-              ]}
-              accessibilityLabel="Número de dias de aluguel"
-            />
           </Card>
 
           {/* Address selection */}
@@ -779,7 +793,6 @@ export default function CarrinhoScreen() {
             disabled={
               !selectedEnderecoId ||
               !isDateValid(dataInicio) ||
-              !isDiasAluguelValid(diasAluguel) ||
               checkingOut
             }
             accessibilityLabel="Finalizar pedido"
@@ -822,6 +835,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemSubtotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  diasRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

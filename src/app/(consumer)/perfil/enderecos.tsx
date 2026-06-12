@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
 import {
     Alert,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -168,18 +169,27 @@ export default function EnderecosScreen() {
   // ── Delete handler ──────────────────────────────────────────────────────────
 
   function handleDeletePress(endereco: Endereco) {
-    Alert.alert(
-      'Remover endereço',
-      `Deseja remover o endereço "${endereco.logradouro}, ${endereco.numero}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: () => confirmDelete(endereco.id),
-        },
-      ]
-    );
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        `Deseja remover o endereço "${endereco.logradouro}, ${endereco.numero}"?`
+      );
+      if (confirmed) {
+        confirmDelete(endereco.id);
+      }
+    } else {
+      Alert.alert(
+        'Remover endereço',
+        `Deseja remover o endereço "${endereco.logradouro}, ${endereco.numero}"?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Remover',
+            style: 'destructive',
+            onPress: () => confirmDelete(endereco.id),
+          },
+        ]
+      );
+    }
   }
 
   async function confirmDelete(id: string) {

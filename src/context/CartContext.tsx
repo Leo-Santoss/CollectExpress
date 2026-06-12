@@ -21,6 +21,7 @@ export interface CartContextValue {
   isLoading: boolean;
   addItem(cacamba_id: string, quantidade: number, diasAluguel: number): Promise<void>;
   updateItem(itemId: string, quantidade: number): Promise<void>;
+  updateItemDias(itemId: string, diasAluguel: number): Promise<void>;
   removeItem(itemId: string): Promise<void>;
   clearCart(): Promise<void>;
   refreshCart(): Promise<void>;
@@ -51,7 +52,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   // ── Load cart on mount ──────────────────────────────────────────────────────
 
@@ -134,7 +135,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (quantidade < 1 || quantidade > 10) return;
     setIsLoading(true);
     try {
-      const updatedCart = await carrinhoService.atualizarItem(itemId, quantidade);
+      const updatedCart = await carrinhoService.atualizarItem(itemId, { quantidade });
+      setCart(updatedCart);
+    } catch {
+      // Refresh to get consistent state
+      await refreshCart();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [refreshCart]);
+
+  // ── Update item dias_aluguel ────────────────────────────────────────────────
+
+  const updateItemDias = useCallback(async (itemId: string, diasAluguel: number) => {
+    if (diasAluguel < 1 || diasAluguel > 30) return;
+    setIsLoading(true);
+    try {
+      const updatedCart = await carrinhoService.atualizarItem(itemId, { dias_aluguel: diasAluguel });
       setCart(updatedCart);
     } catch {
       // Refresh to get consistent state
@@ -198,11 +215,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       addItem,
       updateItem,
+      updateItemDias,
       removeItem,
       clearCart,
       refreshCart,
     }),
-    [cart, itemCount, total, isLoading, addItem, updateItem, removeItem, clearCart, refreshCart]
+    [cart, itemCount, total, isLoading, addItem, updateItem, updateItemDias, removeItem, clearCart, refreshCart]
   );
 
   return (

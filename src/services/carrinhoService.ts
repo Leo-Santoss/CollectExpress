@@ -10,7 +10,8 @@ export interface AdicionarItemPayload {
 }
 
 export interface AtualizarItemPayload {
-  quantidade: number;
+  quantidade?: number;
+  dias_aluguel?: number;
 }
 
 // ─── Service Functions ───────────────────────────────────────────────────────
@@ -25,8 +26,8 @@ export async function adicionarItem(data: AdicionarItemPayload): Promise<Carrinh
   return response.data;
 }
 
-export async function atualizarItem(id: string, quantidade: number): Promise<Carrinho> {
-  const response = await api.put<Carrinho>(`/carrinho/itens/${id}`, { quantidade });
+export async function atualizarItem(id: string, data: AtualizarItemPayload): Promise<Carrinho> {
+  const response = await api.put<Carrinho>(`/carrinho/itens/${id}`, data);
   return response.data;
 }
 

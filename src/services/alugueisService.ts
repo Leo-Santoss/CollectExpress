@@ -7,7 +7,6 @@ import { PaginatedResponse } from './cacambasService';
 export interface CheckoutPayload {
   endereco_id: string;
   data_inicio: string;
-  dias_aluguel: number;
 }
 
 export interface OrderFilters {
